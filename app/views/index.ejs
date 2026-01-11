@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>ShopiKuyKuy 💕 - Manajemen Produk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #FFE4EC; /* pink soft */
+        }
+        .bg-pink {
+            background-color: #F8C8DC !important;
+        }
+        .btn-pink {
+            background-color: #F4B6C2;
+            color: #fff;
+        }
+        .btn-pink:hover {
+            background-color: #E8A6B2;
+            color: #fff;
+        }
+        .card {
+            border-radius: 16px;
+        }
+        h1 {
+            color: #D63384;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">🧁 ShopiKuyKuy Dashboard 💗</h1>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-pink text-white">
+            🎀 Tambah Produk Baru
+        </div>
+        <div class="card-body">
+            <form action="/add" method="POST">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label>🛍️ Nama Produk</label>
+                        <input type="text" name="nama_produk" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label>💸 Harga (Rp)</label>
+                        <input type="number" name="harga" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label>📦 Stok</label>
+                        <input type="number" name="stok" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>🏷️ Kategori</label>
+                        <select name="id_kategori" class="form-select">
+                            <% categories.forEach(cat => { %>
+                                <option value="<%= cat.ID %>"><%= cat.Nama_Kategori %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>📝 Deskripsi</label>
+                        <textarea name="deskripsi" class="form-control"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-pink">✨ Simpan Produk</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-pink text-white">
+            🌸 Daftar Produk
+        </div>
+        <div class="card-body">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Produk</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Stok</th>
+                        <th>Deskripsi</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(products.length === 0) { %>
+                        <tr>
+                            <td colspan="7" class="text-center">🐰 Belum ada produk</td>
+                        </tr>
+                    <% } else { %>
+                        <% products.forEach((item, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <form action="/update/<%= item.ID_Produk %>" method="POST">
+                                <td>
+                                    <input type="text" name="nama_produk" value="<%= item.Nama_Produk %>" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <select name="id_kategori" class="form-select form-select-sm">
+                                        <% categories.forEach(cat => { %>
+                                            <option value="<%= cat.ID %>" <%= item.ID_Kategori == cat.ID ? 'selected' : '' %>>
+                                                <%= cat.Nama_Kategori %>
+                                            </option>
+                                        <% }) %>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="harga" value="<%= item.Harga %>" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <input type="number" name="stok" value="<%= item.Stok %>" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <input type="text" name="deskripsi" value="<%= item.Deskripsi %>" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-pink btn-sm">💾 Update</button>
+                                    <a href="/delete/<%= item.ID_Produk %>" 
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('Yakin hapus produk ini? 😢')">
+                                       🗑️ Hapus
+                                    </a>
+                                </td>
+                            </form>
+                        </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
