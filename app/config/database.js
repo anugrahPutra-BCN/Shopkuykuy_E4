@@ -1,14 +1,11 @@
-const mysql = require('mysql2');
+// app/config/database.js
+const mysql = require('mysql2/promise');
 
-const pool = mysql.createPool({
-    host: 'localhost', // Gunakan IP ini, bukan 'localhost'
-    port: 3306,        // Port MySQL standar Anda
-    user: 'root',
-    password: '',      // Pastikan kosong jika di XAMPP tidak diset password
-    database: 'shopikuykuy',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+const db = mysql.createPool({
+    host: 'db', // HARUS SAMA dengan nama service di docker-compose
+    user: 'user',
+    password: 'password',
+    database: 'shopikuykuy'
 });
 
-module.exports = pool.promise();
+module.exports = db;

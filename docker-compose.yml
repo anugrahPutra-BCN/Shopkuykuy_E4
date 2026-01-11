@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # 1. Database Service
   db:
-    image: mysql:5.7
+    image: mysql:10.6
     container_name: shopikuykuy_db
     restart: always
     environment:
