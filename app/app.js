@@ -17,6 +17,15 @@ app.use(session({
     saveUninitialized: true
 }));
 
+app.use(express.urlencoded({ extended: true }));
+app.set('view engine', 'ejs');
+
+// Import rute produk Anda (asumsikan namanya productRoutes.js)
+const productRoutes = require('./routes/productRoutes');
+app.use('/', productRoutes);
+
+app.listen(3000, () => console.log('Server running on port 3000'));
+
 const checkAuth = (req, res, next) => {
     if (req.session.isAdmin) return next();
     res.redirect('/login');
