@@ -1,67 +1,79 @@
-// --- MIDDLEWARE CEK LOGIN ---
-const isAdmin = (req, res, next) => {
+const express = require('express');
+const router = express.Router();
+const db = require('../config/database');
+
+// Middleware untuk proteksi halaman admin
+const checkAuth = (req, res, next) => {
     if (req.session.isLoggedIn) return next();
     res.redirect('/login');
 };
 
-// --- (R) LOGIN PAGE ---
+// --- AUTHENTICATION ---
 router.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
-// --- LOGIKA LOGIN ---
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        // Query disesuaikan dengan tabel Admin di init.sql
-        const [rows] = await db.query('SELECT * FROM admin WHERE username = ? AND password = ?', [username, password]);
+        // Sesuai SQL: Nama tabel 'Admin', kolom 'Username' dan 'Password' (Huruf Kapital Depan)
+        const [rows] = await db.query(
+            'SELECT * FROM Admin WHERE Username = ? AND Password = ?', 
+            [username, password]
+        );
         
         if (rows.length > 0) {
             req.session.isLoggedIn = true;
-            req.session.adminId = rows[0].id;
+            req.session.adminId = rows[0].ID_Admin; // Ambil ID_Admin untuk referensi FK Produk
             res.redirect('/');
         } else {
             res.render('login', { error: 'Username atau Password salah! ❌' });
         }
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Database Error saat Login");
+        console.error("Error Login:", err);
+        res.status(500).send("Database Error");
     }
 });
 
-// --- LOGOUT ---
 router.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
 });
 
-// --- UPDATE RUTE UTAMA (Gunakan Middleware isAdmin) ---
-router.get('/', isAdmin, async (req, res) => {
+// --- DASHBOARD PRODUK ---
+router.get('/', checkAuth, async (req, res) => {
     try {
-        // Gunakan LEFT JOIN agar kategori yang kosong tetap tampil
+        // Query menggunakan JOIN sesuai nama kolom di SQL Anda
         const [rows] = await db.query(`
-            SELECT p.*, k.nama_kategori 
-            FROM produk p 
-            LEFT JOIN kategori k ON p.id_kategori = k.id
+            SELECT p.*, k.Nama_Kategori 
+            FROM Produk p 
+            LEFT JOIN Kategori k ON p.ID_Kategori = k.ID
         `);
-        const [categories] = await db.query('SELECT * FROM kategori');
+        const [categories] = await db.query('SELECT * FROM Kategori');
         res.render('index', { products: rows, categories: categories });
     } catch (err) {
+        console.error("Error Load Dashboard:", err);
         res.status(500).send("Database Error");
     }
 });
 
-// Pastikan rute POST /add sudah terdaftar di sini agar tidak "Cannot POST"
-router.post('/add', isAdmin, async (req, res) => {
+// --- TAMBAH PRODUK ---
+router.post('/add', checkAuth, async (req, res) => {
     const { nama_produk, harga, deskripsi, stok, id_kategori } = req.body;
+    const tanggal_input = new Date();
+    
     try {
+        // Memastikan Nama Kolom sesuai SQL (Nama_Produk, Harga, dll)
         await db.query(
-            `INSERT INTO produk (nama_produk, harga, deskripsi, stok, id_kategori) 
-             VALUES (?, ?, ?, ?, ?)`,
-            [nama_produk, harga, deskripsi, stok, id_kategori]
+            `INSERT INTO Produk (Nama_Produk, Harga, Deskripsi, Tanggal_Input, Stok, ID_Admin, ID_Kategori) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [nama_produk, harga, deskripsi, tanggal_input, stok, req.session.adminId, id_kategori]
         );
         res.redirect('/');
     } catch (err) {
+        console.error("Error Add Product:", err);
         res.status(500).send("Gagal Menambah Data");
     }
 });
+
+module.exports = router;
